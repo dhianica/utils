@@ -1,0 +1,22 @@
+{
+  "name": "dhianica-utils",
+  "version": "1.0.0",
+  "description": "Utilities",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dhianica/utils.git"
+  },
+  "keywords": [
+    "NodeJS"
+  ],
+  "author": "dhianica",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dhianica/utils/issues"
+  },
+  "homepage": "https://github.com/dhianica/utils#readme"
+}
