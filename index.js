@@ -1,12 +1,14 @@
+/* eslint-disable no-async-promise-executor */
 /* eslint-disable no-continue */
 import fs from 'fs'
-import config from '../config/index.js'
+import path from 'path'
+import { PythonShell } from 'python-shell'
 
 /**
  * getNewestFile function for get newes file in path
- * @param {string} dir is variable for set path dir 
+ * @param {string} dir is variable for set path dir
  * @param {string} regexp is variable for regex get specifiec new file
- * @returns 
+ * @returns
  */
 const getNewestFile = (dir, regexp) => {
   let newest = null
@@ -32,24 +34,23 @@ const getNewestFile = (dir, regexp) => {
 
 /**
  * sum function for sum data with specific key
- * @param {object} data is variable for to be sum 
+ * @param {object} data is variable for to be sum
  * @param {string} key is variable for key want to be sum
- * @returns 
+ * @returns
  */
 const sum = (data, key) => data.reduce((a, b) => a + (b[key] || 0), 0)
 
 /**
  * delay function for create delay event block
- * @param {int} t is variable miliseconds 
- * @param {*} val 
- * @returns 
+ * @param {int} t is variable miliseconds
+ * @param {*} val
+ * @returns
  */
 const delay = (t, val) => new Promise((resolve) => {
   setTimeout(() => {
     resolve(val)
   }, t)
 })
-
 
 /**
  * Paginate is function for paginate data
@@ -61,6 +62,7 @@ const pagination = (data, fetch) => data.reduce((resultArray, item, index) => {
   const chunkIndex = Math.floor(index / fetch)
 
   if (!resultArray[chunkIndex]) {
+    // eslint-disable-next-line no-param-reassign
     resultArray[chunkIndex] = [] // start a new chunk
   }
 
@@ -71,10 +73,10 @@ const pagination = (data, fetch) => data.reduce((resultArray, item, index) => {
 
 /**
  * deleteLogFile function for automate delete log file in path
- * for set path log file you must setting in config->config.json
  */
-const deleteLogFile = () => {
-  fs.readdir(config.env.path_logs, (err, files) => {
+const deleteLogFile = (directory) => {
+  console.log('Run Delete Log File')
+  fs.readdir(directory, (err, files) => {
     if (err) {
       console.log(err)
     }
@@ -87,13 +89,46 @@ const deleteLogFile = () => {
       }
       return 0
     })
-    const temp = files.slice(0, 2)
+    const temp = files.slice(0, 3)
     // eslint-disable-next-line array-callback-return
     files.filter((e) => {
-      if (this.indexOf(e) < 0) { fs.unlinkSync(config.env.path_logs + e) }
-    },
-      temp)
+      if (!temp.includes(e)) { fs.unlinkSync(path.join(directory, e)) }
+    })
   })
+}
+
+/**
+ * runPy function for run script python
+ * @param {string} filepath is variable for set path file
+ * @param {string} filename is variable for set fielanem
+ * @param {object array} args is variable for passing arguments
+ * @returns resolve true
+ */
+const runPy = (filepath, filename, args) => new Promise(async (resolve, reject) => {
+  try {
+    const options = {
+      args,
+    }
+    await PythonShell.run(path.join(filepath, filename), options, (err, result) => {
+      if (err) {
+        throw err
+      } else { resolve(result) }
+    })
+  } catch (error) {
+    reject(error)
+  }
+})
+
+/**
+ * mkdirp is function for create directory
+ * @param {string} directory is variable for set directory path
+ */
+const mkdirp = (directory) => {
+  if (!fs.existsSync(directory)) {
+    fs.mkdir(directory, (err) => {
+      if (err) { throw new Error(`Could not create ${directory}`) }
+    })
+  }
 }
 
 export default {
@@ -102,4 +137,6 @@ export default {
   delay,
   deleteLogFile,
   pagination,
+  runPy,
+  mkdirp,
 }
